@@ -5,7 +5,7 @@ var servo = require('/home/pi/web/library/Servo');
 module.exports = function (homebridge) {
   Service = homebridge.hap.Service;
   Characteristic = homebridge.hap.Characteristic;
-  homebridge.registerAccessory("homebridge-simple-switch", "AirConSwitch", AirConSwitch);
+  homebridge.registerAccessory("homebridge-aircon-switch", "AirConSwitch", AirConSwitch);
 };
 
 function AirConSwitch(log, config) {
