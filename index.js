@@ -1,6 +1,6 @@
 var Service, Characteristic;
-var switchEvent = require('/home/pi/web/dbModels/SwitchEvent');
-var servo = require('/home/pi/web/library/Servo');
+
+var servoState = require('/srv/servoState');
 
 module.exports = function (homebridge) {
   Service = homebridge.hap.Service;
@@ -14,32 +14,25 @@ function AirConSwitch(log, config) {
 }
 
 AirConSwitch.prototype = {
-
-  getSwitchState: function (callback) {
-    switchEvent.getLatest()
-      .then(function (data) {
-        callback(data.state);
+  getState: function (callback) {
+    servoState.state()
+      .then(function (state) {
+        callback(null, state === "on");
       });
   },
 
-  getState: function (callback) {
-    this.getSwitchState(function (state) {
-      callback(null, state === 'on');
-    });
-  },
-
   setState: function (powerOn, callback) {
-    this.getSwitchState(function (state) {
-      if (powerOn && state === 'on' || !powerOn && state !== 'on') {
-        callback();
-        return;
-      }
+    var thenCallback = function () {
+      callback();
+    };
 
-      servo.click()
-        .then(function () {
-          callback();
-        });
-    });
+    if (powerOn) {
+      servoState.on()
+        .then(thenCallback);
+    } else {
+      servoState.off()
+        .then(thenCallback);
+    }
   },
 
   getServices: function () {
@@ -53,8 +46,8 @@ AirConSwitch.prototype = {
     switchService = new Service.Switch(this.name);
     switchService
       .getCharacteristic(Characteristic.On)
-      .on('get', this.getState.bind(this))
-      .on('set', this.setState.bind(this));
+      .on("get", this.getState.bind(this))
+      .on("set", this.setState.bind(this));
 
     return [switchService];
   }
