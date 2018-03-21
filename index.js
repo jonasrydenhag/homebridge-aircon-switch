@@ -1,6 +1,8 @@
+"use strict";
+
 var Service, Characteristic;
 
-var servoState = require('/srv/servoState');
+var blueServo = require('/srv/blueServo');
 
 module.exports = function (homebridge) {
   Service = homebridge.hap.Service;
@@ -15,7 +17,7 @@ function AirConSwitch(log, config) {
 
 AirConSwitch.prototype = {
   getState: function (callback) {
-    servoState.state()
+    blueServo.state()
       .then(function (state) {
         callback(null, state === "on");
       });
@@ -27,10 +29,10 @@ AirConSwitch.prototype = {
     };
 
     if (powerOn) {
-      servoState.on()
+      blueServo.on()
         .then(thenCallback);
     } else {
-      servoState.off()
+      blueServo.off()
         .then(thenCallback);
     }
   },
@@ -43,7 +45,7 @@ AirConSwitch.prototype = {
       .setCharacteristic(Characteristic.Model, "AirCon Switch")
       .setCharacteristic(Characteristic.SerialNumber, "AirCon Switch");
 
-    switchService = new Service.Switch(this.name);
+    var switchService = new Service.Switch(this.name);
     switchService
       .getCharacteristic(Characteristic.On)
       .on("get", this.getState.bind(this))
