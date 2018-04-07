@@ -20,21 +20,26 @@ AirConSwitch.prototype = {
     blueServo.state()
       .then(function (state) {
         callback(null, state === "on");
+      })
+      .catch(function (err) {
+        callback(err || new Error('Failed to get state'), null)
       });
   },
 
   setState: function (powerOn, callback) {
-    var thenCallback = function () {
-      callback();
-    };
+    var stateChange;
 
     if (powerOn) {
-      blueServo.on()
-        .then(thenCallback);
+      stateChange = blueServo.on();
     } else {
-      blueServo.off()
-        .then(thenCallback);
+      stateChange = blueServo.off();
     }
+
+    stateChange
+      .then(callback())
+      .catch(function (err) {
+        callback(err || new Error('Failed to set state ' + powerOn), null)
+      });
   },
 
   getServices: function () {
